@@ -19,13 +19,16 @@ for dom in conn.listAllDomains():
     major, minor = dom.state()
     vm_name = dom.name()
 
-    if major != 1:
-        if dom.autostart():
-            dom.create()
-            resumed.add(dom)
-            log.info("Restoring domain {}".format(vm_name))
-        else:
-            log.debug("{} should not be auto started, skipping.".format(vm_name))
+    if not dom.autostart():
+        log.debug("{} should not be auto started, skipping.".format(vm_name))
+        continue
+
+    if major != 1 and (major, minor) != (3, 2):
+        dom.create()
+        resumed.add(dom)
+        log.info("Restoring domain {}".format(vm_name))
+    elif (major, minor) == (3, 2):
+        resumed.add(dom)
     else:
         log.info("domain {} is already running.".format(vm_name))
 
@@ -35,4 +38,12 @@ time.sleep(60)
 # TODO: Does this trigger a guest-agent resume signal?
 for dom in resumed:
     log.info("resume {}".format(dom.name()))
-    dom.resume()    
+    try:
+        dom.resume()
+    except:
+        log.exception('Error when resuming {}'.format(dom.name()))
+
+    try:
+        dom.pMWakeup()
+    except:
+        log.exception("error in pMWakeup")
