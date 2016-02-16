@@ -20,15 +20,6 @@ for dom in conn.listAllDomains():
         log.info("{} is running".format(vm_name))
 
         try:
-            dom.pMSuspendForDuration(0, libvirt.VIR_NODE_SUSPEND_TARGET_MEM)
-        except:
-            log.exception("exception while hibernating")
-            try:
-                dom.suspend()
-            except:
-                log.exception("could not pause or suspend {}".format(vm_name))
-    
-        try:
             dom.managedSave(0)
         except:
-            log.exception("Managedsave failure for {}".format(vm_name))
+            log.exception("managedsave failure for {}".format(vm_name))
